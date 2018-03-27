@@ -27,34 +27,23 @@ services:
         networks:
             - cqrs_net
 
-    # account-aggregator:
-    #     build: ./cqrs-aggregator
-    #     depends_on:
-    #       - event-hub
-    #     environment:
-    #       EVENT_HUB_API_URL: http://event-hub
-    #       EVENT_HUB_SOCKET_URL: http://event-hub:8000
-    #       MONGO_URL: mongodb://mongo/cqrs-account-view
-    #     networks:
-    #         - cqrs_net
-
     account-query:
         build: ./cqrs-query
         depends_on:
           - event-hub
         environment:
           EVENT_HUB_API_URL: http://event-hub
-          EVENT_HUB_SOCKET_URL: http://event-hub:8000
+          EVENT_HUB_SOCKET_URL: http://event-hub:8080
           MONGO_URL: mongodb://mongo/cqrs-account-view
         networks:
             - cqrs_net
 
     gateway:
-        image: turbosonic/api-gateway:beta
-        ports: 
+        image: turbosonic/api-gateway:alpha
+        ports:
             - 80:80
         volumes:
-            - ${PWD}/gateway.config.yaml:/data/config.yml
+            - ./gateway.config.yaml:/data/config.yaml
         environment:
           AUTHENTICATION_PROVIDER: none
         networks:
