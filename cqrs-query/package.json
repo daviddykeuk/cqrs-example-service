@@ -1,0 +1,26 @@
+{
+  "name": "cqrs-query",
+  "version": "1.0.0",
+  "description": "Example CQRS query service",
+  "main": "index.js",
+  "dependencies": {
+    "dotenv": "^5.0.1",
+    "express": "^4.16.3",
+    "request": "^2.85.0",
+    "socket.io": "^2.0.4",
+    "socket.io-client": "^2.0.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "microservices",
+    "event",
+    "sourcing",
+    "cqrs"
+  ],
+  "author": "David Dyke (david.dyke@nebulr.com.au)",
+  "license": "ISC"
+}

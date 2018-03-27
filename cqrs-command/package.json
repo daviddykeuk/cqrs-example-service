@@ -1,0 +1,23 @@
+{
+  "name": "cqrs-command",
+  "version": "1.0.0",
+  "description": "Nebulr CQRS command example project",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "microservices",
+    "cqrs",
+    "event",
+    "sourcing"
+  ],
+  "author": "David Dyke (david.dyke@nebulr.com.au)",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^5.0.1",
+    "express": "^4.16.3",
+    "request": "^2.85.0"
+  }
+}

@@ -1,0 +1,33 @@
+name: "/web/v1"
+endpoints:
+  - url: /accounts
+    methods:
+      - method: POST
+        roles:
+          - "*"
+        scopes:
+          - "*"
+        destination:
+          name: account-commander
+          host: http://account-commander
+          url: /accounts
+  - url: /accounts/:id
+    methods:
+      - method: GET
+        roles:
+          - "*"
+        scopes:
+          - "*"
+        destination:
+          name: account-query
+          host: http://account-query
+          url: /accounts/:id
+      - method: PUT
+        roles:
+          - "*"
+        scopes:
+          - "*"
+        destination:
+          name: account-commander
+          host: http://account-commander
+          url: /accounts/:id

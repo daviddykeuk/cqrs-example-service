@@ -1,0 +1,64 @@
+version: '2'
+
+services:
+
+    mongo:
+        image: mongo
+        ports:
+            - 27017:27017
+        networks:
+            - cqrs_net
+
+    event-hub:
+        image: daviddyke/cqrs-event-hub
+        depends_on:
+          - mongo
+        environment:
+          MONGO_URL: mongodb://mongo/cqrs-event-hub
+        networks:
+            - cqrs_net
+
+    account-commander:
+        build: ./cqrs-command
+        depends_on:
+          - event-hub
+        environment:
+          EVENT_HUB_API_URL: http://event-hub
+        networks:
+            - cqrs_net
+
+    # account-aggregator:
+    #     build: ./cqrs-aggregator
+    #     depends_on:
+    #       - event-hub
+    #     environment:
+    #       EVENT_HUB_API_URL: http://event-hub
+    #       EVENT_HUB_SOCKET_URL: http://event-hub:8000
+    #       MONGO_URL: mongodb://mongo/cqrs-account-view
+    #     networks:
+    #         - cqrs_net
+
+    account-query:
+        build: ./cqrs-query
+        depends_on:
+          - event-hub
+        environment:
+          EVENT_HUB_API_URL: http://event-hub
+          EVENT_HUB_SOCKET_URL: http://event-hub:8000
+          MONGO_URL: mongodb://mongo/cqrs-account-view
+        networks:
+            - cqrs_net
+
+    gateway:
+        image: turbosonic/api-gateway:beta
+        ports: 
+            - 80:80
+        volumes:
+            - ${PWD}/gateway.config.yaml:/data/config.yml
+        environment:
+          AUTHENTICATION_PROVIDER: none
+        networks:
+            - cqrs_net
+
+networks:
+  cqrs_net:
