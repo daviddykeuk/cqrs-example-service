@@ -1,24 +1,37 @@
+
+// The command service is quite simple:
+// It allows users to create accounts, only validation is that they have a first_name, last_name and valid email
+// It allows transactions to happen on accounts, whatever happens transactions will not be allowed if it will take the user's balance below zero
+
+// LOAD ENVIRONMENT VARIABLES
 require('dotenv').config();
 
-const express = require('express')
+// PREREQUISITES
+const request = require('request');
+const express = require('express');
 const app = express();
 
+// CONNECT TO THE EVENT STREAM SOCKET
 var eventStream = require('socket.io-client')(process.env.EVENT_HUB_SOCKET_URL);
 eventStream.on('connect', function () {
 	console.log("Connected to event stream at %s", process.env.EVENT_HUB_SOCKET_URL);
 });
-
 eventStream.on('disconnect', function () {
 	console.log("Disconnected from event stream");
 });
 
+// SET UP SOME VARIABLES
 var accounts = [];
 var easyAccounts = {};
 
+// GETTING A LIST OF ALL ACCOUNTS
+// SEND BACK THE accounts ARRAY
 app.get('/accounts', (req, res) => {
 	res.send(accounts);
 });
 
+// GETTING A SINGLE ACCOUNT
+// RETURN THE ACCOUNT USING THE easyAccounts OBJECT AND account_id KEY
 app.get('/accounts/:id', (req, res) => {
 	var account = easyAccounts[req.params.id];
 	if (account) {
@@ -28,16 +41,17 @@ app.get('/accounts/:id', (req, res) => {
 	}
 });
 
-
+// IF AN account:created EVENT IS HEARD, PROCESS IT
 eventStream.on('account:created', function (data) {
 	processCreation(data);
 });
 
-
+// IF A transaction:completed EVENT IS HEARD, PROCESS IT
 eventStream.on('transaction:completed', function (data) {
 	processTransaction(data);
 });
 
+// PROCESS ACCOUNT CREATIONS
 function processCreation(data) {
 	var account = {};
 	account.id = data.payload.id;
@@ -46,6 +60,7 @@ function processCreation(data) {
 	account.email = data.payload.email;
 	account.created_timestamp = data.timestamp;
 	account.balance = 0;
+	account.overdraft_limit = 0;
 	account.credits = [];
 	account.debits = [];
 	account.version = data.version;
@@ -54,6 +69,7 @@ function processCreation(data) {
 	easyAccounts[account.id] = account;
 }
 
+// PROCESS TRANSACTIONS
 function processTransaction(data) {
 	var account;
 
@@ -77,10 +93,10 @@ function processTransaction(data) {
 	}
 }
 
-// get current events - this happens on startup
+// GET ALL PREVIOUS EVENTS AND REBUILD THE CURRENT STATE
 console.log("Getting all events from the event-hub...");
-const request = require('request');
 
+// MAKE A REQUEST TO THE EVENT HUB API
 request(process.env.EVENT_HUB_API_URL+ '/events', {
 	json: true
 }, (err, res, body) => {
@@ -88,6 +104,8 @@ request(process.env.EVENT_HUB_API_URL+ '/events', {
 		return console.log(err);
 	}
 	console.log("%s events retrieved...", body.length);
+
+	// FOR EACH TRANSACTION
 	body.forEach((e) => {
 		switch (e.name) {
 			case "account:created":
@@ -101,6 +119,6 @@ request(process.env.EVENT_HUB_API_URL+ '/events', {
 
 	console.log("All events processed.");
 
-	// when we're done, open up the API
+	// START THE API SERVER AFTER PROCESSING ALL THE TRANSACTIONS
 	app.listen(process.env.PORT, () => console.log('API listening on port %s', process.env.PORT));
 });
