@@ -23,8 +23,8 @@ function createAccount(req, res) {
 
 	// create a schema model
 	const schema = Joi.object().keys({
-		first_name: Joi.string().alphanum().min(1).max(30).required(),
-		last_name: Joi.string().alphanum().min(1).max(30).required(),
+		first_name: Joi.string().regex(/^[a-z0-9 ]+$/i).required(),
+		last_name: Joi.string().regex(/^[a-z0-9 ]+$/i).required(),
 		email: Joi.string().email().required()
 	});
 
@@ -65,7 +65,7 @@ function performTransaction(req, res) {
 	// create a schema model
 	const schema = Joi.object().keys({
 		amount: Joi.number().integer().required(),
-		description: Joi.string().alphanum().min(1).max(30).required()
+		description: Joi.string().regex(/^[a-z0-9 ]+$/i).required()
 	});
 
 	// validate the supplied object
@@ -80,9 +80,10 @@ function performTransaction(req, res) {
 				res.status(500).send(err);
 			} else if (account.version == 0) {
 				res.status(404).send("Could not find account");
-			} else if (transaction.amount > 0 || account.balance + transaction.amount < 0) {
+			} else if (transaction.amount < 0 && account.balance + transaction.amount < 0) {
 				res.status(400).send("Not enough funds");
 			} else {
+				transaction.amount = parseInt(transaction.amount);
 				emit("transaction:completed", account_id, account.version, transaction, (err, result) => {
 					if (err) {
 						res.status(500).send("Could not complete transaction, please try again");

@@ -1,24 +1,25 @@
 {
-  "name": "cqrs-query",
+  "name": "cqrs-aggregator",
   "version": "1.0.0",
-  "description": "Example CQRS query service",
+  "description": "Aggregates account events into a Redis store",
   "main": "index.js",
-  "dependencies": {
-    "dotenv": "^5.0.1",
-    "express": "^4.16.3",
-    "redis": "^2.8.0"
-  },
-  "devDependencies": {},
   "scripts": {
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "microservices",
+    "cqrs",
     "event",
     "sourcing",
-    "cqrs"
+    "nebulr"
   ],
   "author": "David Dyke (david.dyke@nebulr.com.au)",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^5.0.1",
+    "redis": "^2.8.0",
+    "request": "^2.85.0",
+    "socket.io-client": "^2.0.4"
+  }
 }

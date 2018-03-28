@@ -9,6 +9,13 @@ services:
         networks:
             - cqrs_net
 
+    redis:
+        image: redis
+        ports:
+            - 6379:6379
+        networks:
+            - cqrs_net
+
     event-hub:
         image: daviddyke/cqrs-event-hub
         depends_on:
@@ -27,14 +34,26 @@ services:
         networks:
             - cqrs_net
 
+    account-aggregator:
+        build: ./cqrs-aggregator
+        depends_on:
+          - event-hub
+          - redis
+        environment:
+          REDIS_HOST: redis
+          REDIS_PORT: 6379
+          EVENT_HUB_API_URL: http://event-hub
+          EVENT_HUB_SOCKET_URL: http://event-hub:8080
+        networks:
+            - cqrs_net
+
     account-query:
         build: ./cqrs-query
         depends_on:
-          - event-hub
+          - account-aggregator
         environment:
-          EVENT_HUB_API_URL: http://event-hub
-          EVENT_HUB_SOCKET_URL: http://event-hub:8080
-          MONGO_URL: mongodb://mongo/cqrs-account-view
+          REDIS_HOST: redis
+          REDIS_PORT: 6379
         networks:
             - cqrs_net
 
